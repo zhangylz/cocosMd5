@@ -10,13 +10,13 @@ gulp.task('cp-src', function(cb) {
   .pipe(gulp.dest('./build/web-mobile/')
   .on('end', cb));
 });
-gulp.task('concat-css', ['cp-src'], function(cb) {
+gulp.task('concat-css', gulp.series('cp-src', function(cb) {
   gulp.src(['./build/web-mobile/style-mobile.css', './html/loading.css'])
   .pipe(concat('style-mobile.css'))
   .pipe(gulp.dest('./build/web-mobile/')
   .on('end', cb));
-});
-gulp.task('htmlmin', ['concat-css'], function(cb) {
+}));
+gulp.task('htmlmin', gulp.series('concat-css', function(cb) {
   gulp.src('./build/web-mobile/*.html')
   .pipe(fileInline())
   .pipe(htmlmin({
@@ -25,16 +25,16 @@ gulp.task('htmlmin', ['concat-css'], function(cb) {
   }))
   .pipe(gulp.dest('./build/web-mobile/')
   .on('end', cb));
-});
-gulp.task('resRev',['htmlmin'], function (cb) {
+}));
+gulp.task('resRev',gulp.series('htmlmin', function (cb) {
   gulp.src(['./build/web-mobile/**/*.js', './build/web-mobile/*.png'])
       .pipe(rev())
       .pipe(gulp.dest('./build/web-mobile/'))
       .pipe(rev.manifest())
       .pipe(gulp.dest('./build/web-mobile/')
       .on('end', cb));
-});
-gulp.task('default',['resRev'], function(cb) {
+}));
+gulp.task('default',gulp.series('resRev', function(cb) {
   gulp.src(['./build/web-mobile/*.json', './build/web-mobile/index.html'])
       .pipe(revCollector())
       .pipe(gulp.dest('./build/web-mobile/'));
@@ -42,6 +42,7 @@ gulp.task('default',['resRev'], function(cb) {
       .pipe(revCollector({
         replaceReved: true
       }))
-      .pipe(gulp.dest('./build/web-mobile/')); 
-});
+      .pipe(gulp.dest('./build/web-mobile/')
+	  .on('end', cb));
+}));
 
